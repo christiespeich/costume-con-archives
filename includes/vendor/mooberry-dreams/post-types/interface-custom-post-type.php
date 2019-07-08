@@ -11,8 +11,6 @@
 if ( !interface_exists( 'MOOBD_ICustom_Post_Type' ) ) {
 	interface MOOBD_ICustom_Post_Type {
 
-		public function __construct( );
-
 		public function set_up( $id, $singular_name, $plural_name );
 
 		public function set_arg( $key, $value );

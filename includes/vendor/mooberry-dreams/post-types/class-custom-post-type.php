@@ -19,8 +19,6 @@ if ( !class_exists( 'MOOBD_Custom_Post_Type' ) ) {
 		private $taxonomies;
 		private $custom_taxonomies;
 
-		public function __construct( ) {
-		}
 
 
 		public function set_up ( $post_type, $singular_name, $plural_name ) {
