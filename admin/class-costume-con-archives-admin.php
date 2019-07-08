@@ -50,12 +50,12 @@ class Costume_Con_Archives_Admin {
 	 *
 	 * @since    1.0.0
 	 */
-	public function __construct( $plugin_name, $version ) {
+	public function __construct( $plugin_name, $version, $con_cpt ) {
 
 		$this->plugin_name = $plugin_name;
 		$this->version     = $version;
 
-		$this->con_cpt = new CCA_Cons_CPT();
+		$this->con_cpt = $con_cpt;
 
 	}
 

@@ -40,6 +40,7 @@ class Costume_Con_Archives_Public {
 	 */
 	private $version;
 
+	private $con_cpt;
 	/**
 	 * Initialize the class and set its properties.
 	 *
@@ -47,10 +48,11 @@ class Costume_Con_Archives_Public {
 	 * @param      string    $plugin_name       The name of the plugin.
 	 * @param      string    $version    The version of this plugin.
 	 */
-	public function __construct( $plugin_name, $version ) {
+	public function __construct( $plugin_name, $version, $con_cpt ) {
 
 		$this->plugin_name = $plugin_name;
 		$this->version = $version;
+		$this->con_cpt = $con_cpt;
 
 	}
 
@@ -97,6 +99,11 @@ class Costume_Con_Archives_Public {
 		 */
 
 		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/costume-con-archives-public.js', array( 'jquery' ), $this->version, false );
+
+	}
+
+	public function con_cpt_content( $content ) {
+
 
 	}
 

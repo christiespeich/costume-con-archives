@@ -57,6 +57,8 @@ class Costume_Con_Archives {
 	 */
 	protected $version;
 
+	protected $con_cpt;
+
 	/**
 	 * Define the core functionality of the plugin.
 	 *
@@ -171,6 +173,7 @@ class Costume_Con_Archives {
 
 
 		$this->loader = new Costume_Con_Archives_Loader();
+		$this->con_cpt = new CCA_Cons_CPT();
 
 	}
 
@@ -200,7 +203,7 @@ class Costume_Con_Archives {
 	 */
 	private function define_admin_hooks() {
 
-		$plugin_admin = new Costume_Con_Archives_Admin( $this->get_plugin_name(), $this->get_version() );
+		$plugin_admin = new Costume_Con_Archives_Admin( $this->get_plugin_name(), $this->get_version(), $this->con_cpt );
 
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
@@ -227,7 +230,7 @@ class Costume_Con_Archives {
 	 */
 	private function define_public_hooks() {
 
-		$plugin_public = new Costume_Con_Archives_Public( $this->get_plugin_name(), $this->get_version() );
+		$plugin_public = new Costume_Con_Archives_Public( $this->get_plugin_name(), $this->get_version(), $this->con_cpt );
 
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_styles' );
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );
