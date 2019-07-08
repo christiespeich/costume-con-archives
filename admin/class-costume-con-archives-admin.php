@@ -176,7 +176,7 @@ class Costume_Con_Archives_Admin {
 				'new_term_section' => true,
 			) );
 
-			$fields = CCA_Tax_Fields_Settings::get_fields_for_taxonomy( $taxonomy );
+			$fields = CCA_Tax_Fields_Settings::get_fields_for_taxonomy( $taxonomy->get_name() );
 			foreach ( $fields as $field ) {
 
 				$args = array(
