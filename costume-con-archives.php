@@ -54,6 +54,15 @@ if ( ! defined( 'COSTUME_CON_ARCHIVES_PLUGIN_FILE' ) ) {
 	define( 'COSTUME_CON_ARCHIVES_PLUGIN_FILE', __FILE__ );
 }
 
+// Plugin Update Checker
+// automatically puts an update notice on WP if a new release is made on github
+require dirname( __FILE__ ) . '/includes/vendor/plugin-update-checker/plugin-update-checker.php';
+	$myUpdateChecker = Puc_v4_Factory::buildUpdateChecker(
+	'https://github.com/christiespeich/costume-con-archives',
+	__FILE__,
+	'costume-con-archives'
+);
+
 
 /**
  * The code that runs during plugin activation.
