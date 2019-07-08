@@ -40,6 +40,8 @@ class Costume_Con_Archives_Shared {
 	 */
 	private $version;
 
+	private $con_cpt;
+
 	/**
 	 * Initialize the class and set its properties.
 	 *
@@ -51,6 +53,8 @@ class Costume_Con_Archives_Shared {
 
 		$this->plugin_name = $plugin_name;
 		$this->version = $version;
+
+
 
 	}
 
@@ -84,10 +88,44 @@ class Costume_Con_Archives_Shared {
 	 * @since    1.0.0
 	 */
 	public function register_post_types() {
-		$con_cpt = new CCA_Cons_CPT();
-		$person_tax = new CCA_People_Tax();
+		//$con_cpt = new CCA_Cons_CPT();
+		$con_cpt = new MOOBD_Custom_Post_Type();
+		$con_cpt->set_up( COSTUME_CON_ARCHIVES_CON_CPT, 'Con', 'Cons' );
+		$con_cpt->add_existing_taxonomy('category' );
+		$con_cpt->set_arg( 'supports', array('title') );
+		$con_cpt->register();
 
+	}
 
+	public function register_taxonomies() {
+		$taxonomies = CCA_Taxonomies_Settings::get_taxonomies();
+
+		foreach ( $taxonomies as $taxonomy ) {
+			$plural   = $taxonomy->get_plural();
+			$singular = $taxonomy->get_singular();
+			$args = array(
+					'labels'       => array(
+						'singular_name'     => $singular,
+						'name'              => $plural,
+						'search_items'      => 'Search ' . $plural,
+						'all_items'         => 'All ' . $plural,
+						'parent_item'       => 'Parent ' . $singular,
+						'parent_item_colon' => 'Parent ' . $singular . ':',
+						'edit_item'         => 'Edit ' . $singular,
+						'update_item'       => 'Update ' . $singular,
+						'add_new_item'      => 'Add New ' . $singular,
+						'new_item_name'     => 'New ' . $singular . ' Name',
+					),
+					'hierarchical' => $taxonomy->is_hierarchical(),
+					'rewrite'      => array( 'slug' => $taxonomy->get_slug() ),
+					'show_admin_column' => true,
+					'meta_box_cb' => false,
+				);
+			if ( $taxonomy->is_hierarchical() ) {
+			    $args['rewrite']['hierarchical'] = true;
+            }
+			register_taxonomy( $taxonomy->get_name(), COSTUME_CON_ARCHIVES_CON_CPT, $args );
+		}
 	}
 
 }

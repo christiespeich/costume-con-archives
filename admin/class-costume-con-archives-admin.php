@@ -27,7 +27,7 @@ class Costume_Con_Archives_Admin {
 	 *
 	 * @since    1.0.0
 	 * @access   private
-	 * @var      string    $plugin_name    The ID of this plugin.
+	 * @var      string $plugin_name The ID of this plugin.
 	 */
 	private $plugin_name;
 
@@ -36,21 +36,26 @@ class Costume_Con_Archives_Admin {
 	 *
 	 * @since    1.0.0
 	 * @access   private
-	 * @var      string    $version    The current version of this plugin.
+	 * @var      string $version The current version of this plugin.
 	 */
 	private $version;
+
+	private $con_cpt;
 
 	/**
 	 * Initialize the class and set its properties.
 	 *
+	 * @param string $plugin_name The name of this plugin.
+	 * @param string $version     The version of this plugin.
+	 *
 	 * @since    1.0.0
-	 * @param      string    $plugin_name       The name of this plugin.
-	 * @param      string    $version    The version of this plugin.
 	 */
 	public function __construct( $plugin_name, $version ) {
 
 		$this->plugin_name = $plugin_name;
-		$this->version = $version;
+		$this->version     = $version;
+
+		$this->con_cpt = new CCA_Cons_CPT();
 
 	}
 
@@ -106,15 +111,94 @@ class Costume_Con_Archives_Admin {
 	 */
 	public function register_settings_metabox() {
 
-		/*$main_settings = new MOOBD_Settings_Page( 'cca_options_page', 'cca_settings' );
-		$main_settings->set_menu_title( __( 'CCA Settings', 'mooberry-directory' ) );
-		$main_settings->create_metabox();*/
-
-
-		$main_settings_page = new CCA_Main_Settings_Page( );
+		$main_settings_page       = new CCA_Main_Settings_Page();
+		$tax_Settings_pages       = new CCA_Taxonomy_Settings_Page();
 		$con_fields_settings_page = new CCA_Con_Fields_Settings_Page();
-		$tax_Settings_pages = new MOOBD_Taxonomy_Settings_Page();
+
+
+		$taxonomies = CCA_Taxonomies_Settings::get_taxonomies();
+		foreach ( $taxonomies as $taxonomy ) {
+			$tax_fields_page = new CCA_Tax_Fields_Settings_Page( $taxonomy );
+
+		}
 
 	}
 
+	// render unique id
+	public function render_unique_id( $field_args, $escaped_value, $object_id, $object_type, $field_type_object ) {
+		echo $field_type_object->input( array( 'class' => 'cmb2_unique_id', 'type' => 'hidden' ) );
+	}
+
+	// sanitize the field
+	public function sanitize_unique_id( $override, $new, $object_id ) {
+		// Set unique id if it's not already set
+		if ( empty( $new ) ) {
+			$value = uniqid( $object_id . '_', false );
+		} else {
+			$value = $new;
+		}
+
+		return $value;
+	}
+
+	// render numbers
+	public function render_text_number( $field, $escaped_value, $object_id, $object_type, $field_type_object ) {
+		echo $field_type_object->input( array( 'class' => 'cmb2-text-small', 'type' => 'number' ) );
+	}
+
+	// sanitize the field
+	public function sanitize_text_number( $null, $new ) {
+		$new = preg_replace( "/[^0-9]/", "", $new );
+
+		return $new;
+	}
+
+	public function con_cpt_add_metaboxes() {
+		$this->con_cpt->add_metaboxes();
+	}
+
+	public function con_cpt_save_taxonomies( $id ) {
+		$this->con_cpt->save_taxonomies( $id );
+	}
+
+	public function tax_term_metaboxes() {
+		$taxonomies = CCA_Taxonomies_Settings::get_taxonomies();
+		foreach ( $taxonomies as $taxonomy ) {
+
+			$cmb = new_cmb2_box( array(
+				'id'               => $taxonomy->get_name() . '_term_custom_fields',
+				'title'            => __( 'Custom Fields', 'cmb2' ),
+				'object_types'     => array( 'term' ), // Post type
+				'taxonomies'       => array( $taxonomy->get_name() ),
+				'context'          => 'normal',
+				'priority'         => 'high',
+				'show_names'       => true, // Show field names on the left
+				'new_term_section' => true,
+			) );
+
+			$fields = CCA_Tax_Fields_Settings::get_fields_for_taxonomy( $taxonomy );
+			foreach ( $fields as $field ) {
+
+				$args = array(
+					'name' => $field->name,
+					'id'   => $field->id,
+				);
+
+				$args['type'] = $field->type;
+
+				if ( $field->has_options() ) {
+					$args['options'] = $field->options;
+				}
+
+				// if it's a self-referencing taxonomy, remove the current term to avoid circular reference
+				if ( $field->is_tax_field ) {
+					if ( $field->taxonomy == $taxonomy->get_name() ) {
+						unset( $args['options'][ intval( $cmb->object_id ) ] );
+					}
+				}
+
+				$cmb->add_field( $args );
+			}
+		}
+	}
 }

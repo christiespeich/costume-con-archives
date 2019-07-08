@@ -147,9 +147,26 @@ class Costume_Con_Archives {
 		require_once COSTUME_CON_ARCHIVES_PLUGIN_DIR . 'includes/vendor/mooberry-dreams/settings-pages/class-settings-page.php';
 		require_once COSTUME_CON_ARCHIVES_PLUGIN_DIR . 'includes/vendor/mooberry-dreams/settings-pages/class-settings-tab.php';
 		require_once COSTUME_CON_ARCHIVES_PLUGIN_DIR . 'includes/vendor/mooberry-dreams/settings-pages/class-tabbed-settings-page.php';
-		require_once COSTUME_CON_ARCHIVES_PLUGIN_DIR . 'includes/vendor/mooberry-dreams/settings-pages/class-taxonomy-settings-page.php';
+		require_once COSTUME_CON_ARCHIVES_PLUGIN_DIR . 'admin/settings-pages/class-taxonomy-settings-page.php';
+		require_once COSTUME_CON_ARCHIVES_PLUGIN_DIR . 'admin/settings-pages/class-custom-fields-settings-page.php';
+		require_once COSTUME_CON_ARCHIVES_PLUGIN_DIR . 'admin/settings-pages/class-tax-fields-settings-page.php';
 		require_once COSTUME_CON_ARCHIVES_PLUGIN_DIR . 'admin/settings-pages/class-main-settings-page.php';
 		require_once COSTUME_CON_ARCHIVES_PLUGIN_DIR . 'admin/settings-pages/class-con-fields-settings-page.php';
+
+		// settings
+		require_once COSTUME_CON_ARCHIVES_PLUGIN_DIR . 'includes/settings/class-settings.php';
+		require_once COSTUME_CON_ARCHIVES_PLUGIN_DIR . 'includes/settings/class-taxonomy.php';
+		require_once COSTUME_CON_ARCHIVES_PLUGIN_DIR . 'includes/settings/class-taxonomies-settings.php';
+		require_once COSTUME_CON_ARCHIVES_PLUGIN_DIR . 'includes/settings/class-custom-fields-settings.php';
+		require_once COSTUME_CON_ARCHIVES_PLUGIN_DIR . 'includes/settings/class-con-fields-settings.php';
+		require_once COSTUME_CON_ARCHIVES_PLUGIN_DIR . 'includes/settings/class-tax-fields-settings.php';
+
+		// custom fields
+		require_once COSTUME_CON_ARCHIVES_PLUGIN_DIR . 'includes/fields/class-custom-field.php';
+		require_once COSTUME_CON_ARCHIVES_PLUGIN_DIR . 'includes/fields/class-taxonomy-field.php';
+		require_once COSTUME_CON_ARCHIVES_PLUGIN_DIR . 'includes/fields/class-state-field.php';
+
+		// custom taxonomies
 
 
 
@@ -189,6 +206,15 @@ class Costume_Con_Archives {
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
 
 		$this->loader->add_action( 'cmb2_admin_init', $plugin_admin, 'register_settings_metabox');
+		$this->loader->add_action( 'cmb2_render_unique_id', $plugin_admin, 'render_unique_id', 10, 5 );
+		$this->loader->add_filter( 'cmb2_sanitize_unique_id', $plugin_admin, 'sanitize_unique_id', 10, 3 );
+		$this->loader->add_action( 'cmb2_render_text_number', $plugin_admin, 'render_text_number', 10, 5 );
+		$this->loader->add_filter( 'cmb2_sanitize_text_number', $plugin_admin, 'sanitize_text_number', 10, 2 );
+		$this->loader->add_action( 'cmb2_admin_init', $plugin_admin, 'tax_term_metaboxes' ) ;
+
+		$this->loader->add_action( 'cmb2_admin_init', $plugin_admin, 'con_cpt_add_metaboxes' ) ;
+		$this->loader->add_filter( 'save_post', $plugin_admin, 'con_cpt_save_taxonomies', 99 );
+
 
 	}
 
@@ -224,6 +250,7 @@ class Costume_Con_Archives {
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_shared, 'enqueue_scripts' );
 
 		$this->loader->add_action( 'init', $plugin_shared, 'register_post_types' );
+		$this->loader->add_action( 'init', $plugin_shared, 'register_taxonomies' );
 
 
 	}
