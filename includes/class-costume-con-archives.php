@@ -214,9 +214,12 @@ class Costume_Con_Archives {
 		$this->loader->add_action( 'cmb2_render_text_number', $plugin_admin, 'render_text_number', 10, 5 );
 		$this->loader->add_filter( 'cmb2_sanitize_text_number', $plugin_admin, 'sanitize_text_number', 10, 2 );
 		$this->loader->add_action( 'cmb2_admin_init', $plugin_admin, 'tax_term_metaboxes' ) ;
+		$this->loader->add_action( 'edited_terms', $plugin_admin, 'tax_save_terms', 99, 2);
 
 		$this->loader->add_action( 'cmb2_admin_init', $plugin_admin, 'con_cpt_add_metaboxes' ) ;
-		$this->loader->add_filter( 'save_post', $plugin_admin, 'con_cpt_save_taxonomies', 99 );
+		$this->loader->add_action( 'save_post', $plugin_admin, 'con_cpt_save_taxonomies', 99 );
+
+
 
 
 	}

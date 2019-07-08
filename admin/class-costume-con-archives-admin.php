@@ -201,4 +201,33 @@ class Costume_Con_Archives_Admin {
 			}
 		}
 	}
+
+	public function tax_save_terms( $term_id, $taxonomy ) {
+
+		// for tax term fields that are cross reference fields, we need
+		// to save all the terms selected for this term on the other
+		//  terms so they stay in sync
+		$fields = CCA_Tax_Fields_Settings::get_fields_for_taxonomy( $taxonomy );
+		foreach ( $fields as $field ) {
+			// this only applies to tax fields that are the same taxonomy
+			if ( $field->is_tax_field && $field->taxonomy == $taxonomy ) {
+
+				// get all of the terms selected in this cross reference field
+				$terms = get_term_meta( $term_id, $field->id, true );  // returns array of strings that are term_ids
+				$terms = array_map( 'intval', $terms ); // convert to ints
+
+				// add in the term we're updating since that wasn't in the list
+				$new_terms = $terms;
+				$new_terms[] = $term_id;
+
+				foreach ( $terms as $term ) {
+					update_term_meta( $term, $field->id, $new_terms );
+				}
+
+			}
+		}
+
+
+	}
+
 }
