@@ -79,5 +79,21 @@ class CCA_Cons_CPT {
 	}
 
 
+	public function content( $content ) {
+		global $post;
+		if ( get_post_type( $post ) != COSTUME_CON_ARCHIVES_CON_CPT ) {
+			return $content;
+		}
+		if ( !is_main_query() ) {
+			return $content;
+		}
+
+		ob_start();
+		include 'partials/con-cpt-content.php';
+		$content = ob_get_clean();
+
+		return $content;
+	}
+
 
 }

@@ -103,7 +103,7 @@ class Costume_Con_Archives_Public {
 	}
 
 	public function con_cpt_content( $content ) {
-
+		return $this->con_cpt->content( $content );
 
 	}
 
