@@ -26,11 +26,19 @@ class CCA_Main_Settings_Page  extends MOOBD_Settings_Page {
 		}
 
 		$this->add_field( array(
-			'name'    => esc_html__( 'Test Add Listing Page', 'costume-con-archives' ),
-			'id'      => 'test_page',
+			'name'    => esc_html__( 'Album Page', 'costume-con-archives' ),
+			'id'      => 'album_page',
 			'type'    => 'select',
 			'options' => $pages_array,
 		) );
+
+		$this->add_field( array(
+			'name'  =>  esc_html__('Show Data Migration Menu', 'costume-con-archives'),
+			'id'    =>  'show_migration_menu',
+			'type'  =>  'checkbox'
+		));
 	}
+
+
 }
 

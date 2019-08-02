@@ -33,5 +33,20 @@ class CCA_Taxonomy_Field extends CCA_Custom_Field {
 
 	}
 
+	public function output_value ( $object_id, $value ) {
+
+		$terms = array();
+		if ( !is_array($value) ) {
+			$value = array($value);
+		}
+		foreach ( $value as $term_id ) {
+			$term_id = intval($term_id);
+			$term = get_term( $term_id, $this->taxonomy );
+			if ( !is_wp_error( $term ) ) {
+				$terms[] = '<a href="' . get_term_link( $term_id, $this->taxonomy ) . '">' . $term->name . '</a>';
+			}
+		}
+		return join( ', ' , $terms );
+	}
 
 }

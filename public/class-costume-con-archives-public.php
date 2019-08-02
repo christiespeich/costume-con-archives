@@ -40,7 +40,6 @@ class Costume_Con_Archives_Public {
 	 */
 	private $version;
 
-	private $con_cpt;
 	/**
 	 * Initialize the class and set its properties.
 	 *
@@ -48,11 +47,11 @@ class Costume_Con_Archives_Public {
 	 * @param      string    $plugin_name       The name of the plugin.
 	 * @param      string    $version    The version of this plugin.
 	 */
-	public function __construct( $plugin_name, $version, $con_cpt ) {
+	public function __construct( $plugin_name, $version ) {
 
 		$this->plugin_name = $plugin_name;
 		$this->version = $version;
-		$this->con_cpt = $con_cpt;
+
 
 	}
 
@@ -102,11 +101,51 @@ class Costume_Con_Archives_Public {
 
 	}
 
-	public function con_cpt_content( $content ) {
+	/*public function con_cpt_content( $content ) {
 		return $this->con_cpt->content( $content );
+
+	}*/
+
+	public function content( $content ) {
+		if ( is_main_query() && is_tax() ) {
+			$taxonomy = get_query_var( 'taxonomy' );
+			$path = COSTUME_CON_ARCHIVES_PLUGIN_DIR . 'includes/taxonomies/partials/';
+			$filename =  $taxonomy . '-content.php';
+			if ( !file_exists( $path . $filename ) ) {
+				$filename = 'content.php';
+			}
+			ob_start();
+			include $path . $filename;
+			$content .= ob_get_clean();
+		}
+		echo $content;
 
 	}
 
+	public function album_shortcode( $atts, $content ) {
+		// check for proper inputs
+		$album_id = isset( $_GET['album']) ? intval( $_GET['album'] ) : 0;
+		$gallery_id = isset( $_GET['gallery']) ? intval( $_GET['gallery'] ) : 0;
+
+		if ( $album_id == 0 && $gallery_id == 0 ) {
+			return $content;
+		}
+
+		if ( $album_id !== 0 ) {
+			$album = FooGalleryAlbum::get_by_id($album_id);
+			$name = $album->name;
+			$shortcode = foogallery_build_album_shortcode( $album_id);
+		}
+
+		if ( $gallery_id !== 0 ) {
+			$gallery = FooGallery::get_by_id( $gallery_id );
+			$name = $gallery->name;
+			$shortcode = foogallery_build_gallery_shortcode( $gallery_id );
+		}
+		$content .= '<h2>' . $name . '</h2>' . $shortcode;
+		return do_shortcode($content);
+
+	}
 
 
 }

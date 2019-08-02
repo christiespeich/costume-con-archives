@@ -67,7 +67,7 @@ class CCA_Custom_Fields_Settings_Page extends MOOBD_Settings_Page {
 		);
 
 		$this->add_group_field( $group_field_id, array(
-			'name'  =>  '',
+			'name'  =>  'Unique ID',
 			'id'    =>  'unique_id',
 			'type'  =>  'unique_id'
 		));

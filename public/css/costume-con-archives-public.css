@@ -2,3 +2,18 @@
  * All of the CSS for your public-facing functionality should be
  * included in this file.
  */
+
+.cca_custom_field_label, .cca_custom_field_value {
+    display:inline;
+}
+
+.cca_custom_field_label {
+    font-weight: bold;
+}
+.cca_custom_field_label:after {
+    content: ': ';
+}
+
+.cca_custom_field {
+    margin-bottom: 5px;
+}

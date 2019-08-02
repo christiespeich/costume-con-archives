@@ -32,8 +32,14 @@ class CCA_Settings {
 		self::load( $key );
 	}
 
+	public static function delete( $setting_page, $field ) {
+		self::load( $setting_page );
+		if ( isset( self::$options[$setting_page][$field]) ) {
+			unset( self::$options[ $setting_page ][ $field ] );
 
-
+			self::update( $setting_page, self::$options[ $setting_page ] );
+		}
+	}
 
 
 

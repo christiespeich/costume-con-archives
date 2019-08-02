@@ -1,9 +1,20 @@
 <?php
 
 
-class CCA_Cons_CPT {
+class CCA_CPT_With_Custom_fields {
 
-	public function __construct( ) {
+	protected $post_type;
+	protected $field_settings;
+
+	public function __construct( $post_type, $field_settings ) {
+		$this->post_type = $post_type;
+		$this->field_settings = $field_settings;
+
+		add_filter( 'the_content', array( $this, 'content'));
+		add_action( 'cmb2_admin_init', array( $this, 'add_metaboxes' ) );
+		add_action( 'save_post', array($this, 'save_taxonomies'), 99 );
+
+
 		/*parent::set_up( COSTUME_CON_ARCHIVES_CON_CPT, 'Con', 'Cons' );
 		parent::add_existing_taxonomy('category' );
 		$this->set_arg( 'supports', array('title') );
@@ -15,9 +26,9 @@ class CCA_Cons_CPT {
 	public function add_metaboxes() {
 
 		$cmb = new_cmb2_box( array(
-		'id'            => 'custom_fields',
+		'id'            => 'custom_fields_' . $this->post_type,
 		'title'         => __( 'Custom Fields', 'cmb2' ),
-		'object_types'  => array( COSTUME_CON_ARCHIVES_CON_CPT ), // Post type
+		'object_types'  => array( $this->post_type ), // Post type
 		'context'       => 'normal',
 		'priority'      => 'high',
 		'show_names'    => true, // Show field names on the left
@@ -26,7 +37,7 @@ class CCA_Cons_CPT {
 	) );
 
 
-		$fields = CCA_Con_Fields_Settings::get_fields();
+		$fields = $this->field_settings::get_fields();
 		foreach ( $fields as $field ) {
 
 			$args = array(
@@ -46,10 +57,14 @@ class CCA_Cons_CPT {
 
 	public function save_taxonomies( $id ) {
 
+		global $post;
+		if ( get_post_type( $post) != $this->post_type ) {
+			return;
+		}
 		// if it's a tax field, save all selected items as terms AND save as post meta
 
 		// get all taxonomy selections
-		$fields = CCA_Con_Fields_Settings::get_fields();
+		$fields = $this->field_settings::get_fields();
 		$tax_values = array();
 		foreach ( $fields as $field ) {
 
@@ -81,16 +96,17 @@ class CCA_Cons_CPT {
 
 	public function content( $content ) {
 		global $post;
-		if ( get_post_type( $post ) != COSTUME_CON_ARCHIVES_CON_CPT ) {
+		if ( get_post_type( $post ) != $this->post_type ) {
 			return $content;
 		}
 		if ( !is_main_query() ) {
 			return $content;
 		}
 
+		$filename = $this->post_type . '-content.php';
 		ob_start();
-		include 'partials/con-cpt-content.php';
-		$content = ob_get_clean();
+		include 'partials/' . $filename;
+		$content .= ob_get_clean();
 
 		return $content;
 	}

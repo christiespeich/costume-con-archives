@@ -7,4 +7,9 @@ class CCA_Tax_Fields_Settings extends CCA_Custom_Fields_Settings {
 		return parent::get_fields( 'cca_' . $taxonomy . '_fields_settings', 'cca_' . $taxonomy . '_custom_fields');
 	}
 
+	public static function delete_tax_fields( $taxonomy ) {
+		parent::delete_fields( 'cca_' . $taxonomy . '_fields_settings', 'cca_' . $taxonomy . '_custom_fields', 'term' );
+
+	}
+
 }

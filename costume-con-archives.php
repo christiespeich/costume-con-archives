@@ -38,6 +38,7 @@ if ( ! defined( 'WPINC' ) ) {
 define( 'COSTUME_CON_ARCHIVES_VERSION', '1.0.0' );
 define( 'COSTUME_CON_ARCHIVES_VERSION_KEY', 'cca_plugin_version' );
 define( 'COSTUME_CON_ARCHIVES_CON_CPT', 'cca_con');
+define( 'COSTUME_CON_ARCHIVES_COMPETITION_CPT', 'cca_competition');
 define( 'COSTUME_CON_ARCHIVES_PERSON_TAX', 'cca_person');
 
 if ( ! defined( 'COSTUME_CON_ARCHIVES_PLUGIN_DIR' ) ) {

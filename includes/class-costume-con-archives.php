@@ -58,6 +58,8 @@ class Costume_Con_Archives {
 	protected $version;
 
 	protected $con_cpt;
+	protected $competition_cpt;
+	protected $photos_cpt;
 
 	/**
 	 * Define the core functionality of the plugin.
@@ -139,10 +141,16 @@ class Costume_Con_Archives {
 		 */
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'shared/class-costume-con-archives-shared.php';
 
+		require_once COSTUME_CON_ARCHIVES_PLUGIN_DIR . 'admin/class-admin-notice-manager.php';
+
 		// post types and taxonomies
 		require_once COSTUME_CON_ARCHIVES_PLUGIN_DIR . 'includes/vendor/mooberry-dreams/post-types/class-custom-taxonomy.php';
 		require_once COSTUME_CON_ARCHIVES_PLUGIN_DIR . 'includes/vendor/mooberry-dreams/post-types/class-custom-post-type.php';
-		require_once COSTUME_CON_ARCHIVES_PLUGIN_DIR . 'includes/cons/class-cons-cpt.php';
+		//require_once COSTUME_CON_ARCHIVES_PLUGIN_DIR . 'includes/cons/class-cons-cpt.php';
+		require_once COSTUME_CON_ARCHIVES_PLUGIN_DIR . 'includes/cpts/class-cpt-with-custom-fields.php';
+		require_once COSTUME_CON_ARCHIVES_PLUGIN_DIR . 'includes/cpts/class-competition-cpt.php';
+		require_once COSTUME_CON_ARCHIVES_PLUGIN_DIR . 'includes/cpts/class-con-cpt.php';
+		require_once COSTUME_CON_ARCHIVES_PLUGIN_DIR . 'includes/cpts/class-photo-cpt.php';
 		require_once COSTUME_CON_ARCHIVES_PLUGIN_DIR . 'includes/people/class-people-tax.php';
 
 		// setting pages
@@ -154,26 +162,46 @@ class Costume_Con_Archives {
 		require_once COSTUME_CON_ARCHIVES_PLUGIN_DIR . 'admin/settings-pages/class-tax-fields-settings-page.php';
 		require_once COSTUME_CON_ARCHIVES_PLUGIN_DIR . 'admin/settings-pages/class-main-settings-page.php';
 		require_once COSTUME_CON_ARCHIVES_PLUGIN_DIR . 'admin/settings-pages/class-con-fields-settings-page.php';
+		require_once COSTUME_CON_ARCHIVES_PLUGIN_DIR . 'admin/settings-pages/class-photo-fields-settings-page.php';
+		require_once COSTUME_CON_ARCHIVES_PLUGIN_DIR . 'admin/settings-pages/class-competition-fields-settings-page.php';
 
 		// settings
 		require_once COSTUME_CON_ARCHIVES_PLUGIN_DIR . 'includes/settings/class-settings.php';
 		require_once COSTUME_CON_ARCHIVES_PLUGIN_DIR . 'includes/settings/class-taxonomy.php';
+		require_once COSTUME_CON_ARCHIVES_PLUGIN_DIR . 'includes/settings/class-main-settings.php';
 		require_once COSTUME_CON_ARCHIVES_PLUGIN_DIR . 'includes/settings/class-taxonomies-settings.php';
 		require_once COSTUME_CON_ARCHIVES_PLUGIN_DIR . 'includes/settings/class-custom-fields-settings.php';
 		require_once COSTUME_CON_ARCHIVES_PLUGIN_DIR . 'includes/settings/class-con-fields-settings.php';
+		require_once COSTUME_CON_ARCHIVES_PLUGIN_DIR . 'includes/settings/class-competition-fields-settings.php';
+		require_once COSTUME_CON_ARCHIVES_PLUGIN_DIR . 'includes/settings/class-photo-fields-settings.php';
 		require_once COSTUME_CON_ARCHIVES_PLUGIN_DIR . 'includes/settings/class-tax-fields-settings.php';
 
 		// custom fields
 		require_once COSTUME_CON_ARCHIVES_PLUGIN_DIR . 'includes/fields/class-custom-field.php';
 		require_once COSTUME_CON_ARCHIVES_PLUGIN_DIR . 'includes/fields/class-taxonomy-field.php';
 		require_once COSTUME_CON_ARCHIVES_PLUGIN_DIR . 'includes/fields/class-state-field.php';
+		require_once COSTUME_CON_ARCHIVES_PLUGIN_DIR . 'includes/fields/class-website-field.php';
+		require_once COSTUME_CON_ARCHIVES_PLUGIN_DIR . 'includes/fields/class-email-field.php';
+
+		// migration
+		if ( CCA_Main_Settings::get_show_migration_menu() ) {
+			require_once COSTUME_CON_ARCHIVES_PLUGIN_DIR . 'includes/vendor/wp-background-processing/wp-background-processing.php';
+			require_once COSTUME_CON_ARCHIVES_PLUGIN_DIR .'includes/migration/class-g2-migration.php';
+			require_once COSTUME_CON_ARCHIVES_PLUGIN_DIR .'includes/migration/class-g2-original-data-table.php';
+			require_once COSTUME_CON_ARCHIVES_PLUGIN_DIR . 'includes/migration/class-migrate-photos-background.php';
+		}
+
 
 		// custom taxonomies
 
 
 
 		$this->loader = new Costume_Con_Archives_Loader();
-		$this->con_cpt = new CCA_Cons_CPT();
+		/*$this->con_cpt = new CCA_Cons_CPT();
+		$this->compeition_cpt_cpt = new CCA_Competition_CPT();*/
+		$this->con_cpt = new CCA_Con_CPT( COSTUME_CON_ARCHIVES_CON_CPT, CCA_Con_Fields_Settings::class);
+		$this->competition_cpt = new CCA_Competition_CPT( COSTUME_CON_ARCHIVES_COMPETITION_CPT, CCA_Competition_Fields_Settings::class);
+		$this->photos_cpt = new CCA_Photo_CPT( 'attachment', CCA_Photo_Fields_Settings::class);
 
 	}
 
@@ -203,21 +231,28 @@ class Costume_Con_Archives {
 	 */
 	private function define_admin_hooks() {
 
-		$plugin_admin = new Costume_Con_Archives_Admin( $this->get_plugin_name(), $this->get_version(), $this->con_cpt );
+		$plugin_admin = new Costume_Con_Archives_Admin( $this->get_plugin_name(), $this->get_version());
 
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
+		$this->loader->add_action( 'admin_notices', $plugin_admin, 'admin_notices' );
 
 		$this->loader->add_action( 'cmb2_admin_init', $plugin_admin, 'register_settings_metabox');
 		$this->loader->add_action( 'cmb2_render_unique_id', $plugin_admin, 'render_unique_id', 10, 5 );
-		$this->loader->add_filter( 'cmb2_sanitize_unique_id', $plugin_admin, 'sanitize_unique_id', 10, 3 );
+		$this->loader->add_filter( 'cmb2_sanitize_unique_id', $plugin_admin, 'sanitize_unique_id', 10 );
 		$this->loader->add_action( 'cmb2_render_text_number', $plugin_admin, 'render_text_number', 10, 5 );
 		$this->loader->add_filter( 'cmb2_sanitize_text_number', $plugin_admin, 'sanitize_text_number', 10, 2 );
+		$this->loader->add_action( 'admin_menu', $plugin_admin, 'remove_taxonomy_metaboxes_on_con' );
+		$this->loader->add_action( 'admin_menu', $plugin_admin, 'admin_menu', 99 );
 		$this->loader->add_action( 'cmb2_admin_init', $plugin_admin, 'tax_term_metaboxes' ) ;
 		$this->loader->add_action( 'edited_terms', $plugin_admin, 'tax_save_terms', 99, 2);
+		if ( CCA_Main_Settings::get_show_migration_menu() ) {
+			$this->loader->add_action( 'wp_ajax_cca_migrate_create_custom_fields', $plugin_admin, 'migrate_create_custom_fields' );
+			$this->loader->add_action( 'wp_ajax_cca_import_data', $plugin_admin, 'import_g2_data' );
+			$this->loader->add_action( 'wp_ajax_cca_import_photos', $plugin_admin, 'import_g2_photos' );
+		}
 
-		$this->loader->add_action( 'cmb2_admin_init', $plugin_admin, 'con_cpt_add_metaboxes' ) ;
-		$this->loader->add_action( 'save_post', $plugin_admin, 'con_cpt_save_taxonomies', 99 );
+
 
 
 
@@ -233,12 +268,12 @@ class Costume_Con_Archives {
 	 */
 	private function define_public_hooks() {
 
-		$plugin_public = new Costume_Con_Archives_Public( $this->get_plugin_name(), $this->get_version(), $this->con_cpt );
+		$plugin_public = new Costume_Con_Archives_Public( $this->get_plugin_name(), $this->get_version());
 
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_styles' );
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );
-
-		$this->loader->add_filter( 'the_content', $plugin_public, 'con_cpt_content');
+		$this->loader->add_action( 'cca_custom_tax_term_meta', $plugin_public, 'content' );
+		$this->loader->add_shortcode( 'cca_album', $plugin_public, 'album_shortcode' );
 
 
 	}
@@ -316,3 +351,4 @@ class Costume_Con_Archives {
 	}
 
 }
+

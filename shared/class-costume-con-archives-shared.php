@@ -92,8 +92,23 @@ class Costume_Con_Archives_Shared {
 		$con_cpt = new MOOBD_Custom_Post_Type();
 		$con_cpt->set_up( COSTUME_CON_ARCHIVES_CON_CPT, 'Con', 'Cons' );
 		$con_cpt->add_existing_taxonomy('category' );
-		$con_cpt->set_arg( 'supports', array('title') );
+		$con_cpt->add_existing_taxonomy('post_tag' );
+		$con_cpt->set_arg( 'supports', array('title', 'content') );
+		$con_cpt->set_arg( 'has_archive', true );
+		$con_cpt->set_arg( 'rewrite', array( 'slug'=>'con') );
+		$con_cpt->set_arg( 'menu_icon', 'dashicons-groups' );
+
 		$con_cpt->register();
+
+		$con_competition_cpt = new MOOBD_Custom_Post_Type();
+		$con_competition_cpt->set_up( COSTUME_CON_ARCHIVES_COMPETITION_CPT, 'Competition', 'Competitions' );
+		$con_competition_cpt->add_existing_taxonomy('category' );
+		$con_competition_cpt->add_existing_taxonomy('post_tag' );
+		$con_competition_cpt->set_arg( 'supports', array('title', 'content') );
+		$con_competition_cpt->set_arg( 'has_archive', true );
+		$con_competition_cpt->set_arg( 'rewrite', array( 'slug'=>'competition') );
+		$con_competition_cpt->set_arg( 'menu_icon', 'dashicons-awards' );
+		$con_competition_cpt->register();
 
 	}
 
@@ -124,7 +139,7 @@ class Costume_Con_Archives_Shared {
 			if ( $taxonomy->is_hierarchical() ) {
 			    $args['rewrite']['hierarchical'] = true;
             }
-			register_taxonomy( $taxonomy->get_name(), COSTUME_CON_ARCHIVES_CON_CPT, $args );
+			register_taxonomy( $taxonomy->get_name(), array('attachment', COSTUME_CON_ARCHIVES_CON_CPT, COSTUME_CON_ARCHIVES_COMPETITION_CPT ), $args );
 		}
 	}
 
