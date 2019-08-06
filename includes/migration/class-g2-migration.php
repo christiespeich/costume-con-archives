@@ -16,12 +16,15 @@ class CCA_G2_Migration {
 
 
 	public function __construct() {
-		$this->original_data_table = new CCA_G2_Original_Data_Table();
-		$this->db_object    = new CCA_G2_Original_Data_Table();
-		$this->id_mapping          = array();
-		$this->albums              = array();
-		$this->galleries           = array();
-		$this->photo_migrate_process = new Costume_Con_Archives_Migrate_Photos_Background( $this);
+
+		//add_filter( 'foogallery_defaults', array( $this, 'set_foogallery_defaults' ) );
+
+		$this->original_data_table   = new CCA_G2_Original_Data_Table();
+		$this->db_object             = new CCA_G2_Original_Data_Table();
+		$this->id_mapping            = array();
+		$this->albums                = array();
+		$this->galleries             = array();
+		$this->photo_migrate_process = new Costume_Con_Archives_Migrate_Photos_Background( $this );
 
 		$types = array( 'con', 'competition', 'photo' );
 		// get all column names
@@ -34,17 +37,17 @@ class CCA_G2_Migration {
 		}
 
 
-
-		$this->people_fields = array(	'Chair',
-				'Founder\'s Award Recipient',
-				'Lifetime Achievement Award Recipient',
-				'Director',
-				'Master of Ceremonies',
-				'Presentation Judges',
-				'Workmanship Judges',
-				'Constructed By',
-				'Designed By',
-				'Worn By',
+		$this->people_fields  = array(
+			'Chair',
+			'Founder\'s Award Recipient',
+			'Lifetime Achievement Award Recipient',
+			'Director',
+			'Master of Ceremonies',
+			'Presentation Judges',
+			'Workmanship Judges',
+			'Constructed By',
+			'Designed By',
+			'Worn By',
 		);
 		$this->website_fields = array(
 			'convention_website'
@@ -52,13 +55,18 @@ class CCA_G2_Migration {
 		$this->wysiwyg_fields = array(
 			'Rules',
 			'Miscellaneous Notes',
-				'Program and Participants',
-				'Publications Contents',
-				'Special Activities',
-				'Voting Info',
+			'Program and Participants',
+			'Publications Contents',
+			'Special Activities',
+			'Voting Info',
 		);
 	}
 
+	public function set_foogallery_defaults( $defaults ) {
+		$defaults['link'] = 'page';
+
+		return $defaults;
+	}
 
 	public function create_custom_fields( $delete, $types ) {
 
@@ -86,7 +94,6 @@ class CCA_G2_Migration {
 		}
 
 
-
 		foreach ( $custom_fields as $custom_field_type ) {
 			$group_field_id = $custom_field_type['group_field_id'];
 			$option_key     = $custom_field_type['option_key'];
@@ -96,13 +103,13 @@ class CCA_G2_Migration {
 			foreach ( $custom_field_type['fields'] as $custom_field ) {
 
 				$type = 'text';
-				if ( in_array( $custom_field, $this->people_fields )) {
+				if ( in_array( $custom_field, $this->people_fields ) ) {
 					$type = 'taxonomy_multicheck-person';
 				}
-				if ( $custom_field == 'Convention Website') {
+				if ( $custom_field == 'Convention Website' ) {
 					$type = 'text_url';
 				}
-				if ( in_array( $custom_field, $this->wysiwyg_fields )) {
+				if ( in_array( $custom_field, $this->wysiwyg_fields ) ) {
 					$type = 'wysiwyg';
 				}
 
@@ -143,9 +150,10 @@ class CCA_G2_Migration {
 
 
 	protected function delete_albums() {
-		$posts = get_posts( array( 'post_type'      => array( COSTUME_CON_ARCHIVES_CON_CPT ),
-		                           'posts_per_page' => - 1,
-		                           'fields'         => 'ids'
+		$posts = get_posts( array(
+			'post_type'      => array( COSTUME_CON_ARCHIVES_CON_CPT ),
+			'posts_per_page' => - 1,
+			'fields'         => 'ids'
 		) );
 		foreach ( $posts as $post ) {
 
@@ -155,9 +163,10 @@ class CCA_G2_Migration {
 	}
 
 	protected function delete_galleries() {
-		$posts = get_posts( array( 'post_type'      => array( COSTUME_CON_ARCHIVES_COMPETITION_CPT ),
-		                           'posts_per_page' => - 1,
-		                           'fields'         => 'ids'
+		$posts = get_posts( array(
+			'post_type'      => array( COSTUME_CON_ARCHIVES_COMPETITION_CPT ),
+			'posts_per_page' => - 1,
+			'fields'         => 'ids'
 		) );
 		foreach ( $posts as $post ) {
 			$album_id = get_post_meta( $post, 'competition_album', true );
@@ -241,46 +250,43 @@ class CCA_G2_Migration {
 
 	public function get_photo_column_names() {
 		return $this->column_names['photo'];
-}
+	}
 
 	public function import_photos( $delete, $start_at, $how_many ) {
 		if ( $delete ) {
 			CCA_Photo_Fields_Settings::delete_data();
 		}
-			// finally do photos
+		// finally do photos
 		//for ( $x = 0; $x < 8464; $x = $x + 500 ) {
 		//	$rows = $db_object->get_photos( null, null, false, $x, 500 );
-			$rows = $this->db_object->get_photos( null, null, false, $start_at, $how_many );
-
-
+		$rows = $this->db_object->get_photos( null, null, false, $start_at, $how_many );
 
 
 		//$x =0;
 		//	$rows = $this->db_object->get_photos();
-			foreach ( $rows as $row ) {
-				$pathComponent = isset( $row->g_pathComponent ) ? trim( $row->g_pathComponent ) : '';
-				//$parentSequence = isset( $row->g_parentSequence ) ? trim( $row->g_parentSequence ) : '';
-				if ( $pathComponent == '' || $pathComponent == null ) {
-					continue;
-				}
-				//$this->photo_migrate_process->push_to_queue( $row->g_itemId ); // array('row'=> $row, 'columns' => $this->column_names['photo'] ) );
-				$this->import_photo( $row, $this->column_names['photo']);
-		//		$x++;
-				// batch 100 at a time
-		//		if ( $x > 100 ) {
+		foreach ( $rows as $row ) {
+			$pathComponent = isset( $row->g_pathComponent ) ? trim( $row->g_pathComponent ) : '';
+			//$parentSequence = isset( $row->g_parentSequence ) ? trim( $row->g_parentSequence ) : '';
+			if ( $pathComponent == '' || $pathComponent == null ) {
+				continue;
+			}
+			//$this->photo_migrate_process->push_to_queue( $row->g_itemId ); // array('row'=> $row, 'columns' => $this->column_names['photo'] ) );
+			$this->import_photo( $row, $this->column_names['photo'] );
+			//		$x++;
+			// batch 100 at a time
+			//		if ( $x > 100 ) {
 			//		$this->photo_migrate_process->save()->dispatch();
 			//		$x = 0;
-		//			break;
-		//		}
-			}
-			//$this->photo_migrate_process->save()->dispatch();
-	//	}
+			//			break;
+			//		}
+		}
+		//$this->photo_migrate_process->save()->dispatch();
+		//	}
 
 	}
 
 
-
-	private function import_photo( $row , $column_names ) {
+	private function import_photo( $row, $column_names ) {
 		// get the id mapping
 		$this->id_mapping = get_option( 'cca_migration_id_mapping', array() );
 		//$column_names = $this->g2_migration->get_photo_column_names();
@@ -290,13 +296,12 @@ class CCA_G2_Migration {
 		if ( $attachment_id != 0 ) {
 
 
-
 			// add it to gallery
-			$competition_id = $this->get_parent(  $row->g_parentSequence );
+			$competition_id = $this->get_parent( $row->g_parentSequence );
 			$gallery_id     = get_post_meta( $competition_id, 'competition_album', true );
 			$gallery_photos = get_post_meta( $gallery_id, FOOGALLERY_META_ATTACHMENTS, true );
-			if (  $gallery_photos == '' ) {
-				$gallery_photos = array(  );
+			if ( $gallery_photos == '' ) {
+				$gallery_photos = array();
 			}
 			$gallery_photos[] = $attachment_id;
 			update_post_meta( $gallery_id, FOOGALLERY_META_ATTACHMENTS, $gallery_photos );
@@ -330,7 +335,7 @@ class CCA_G2_Migration {
 				'post_status'    => 'inherit'
 			);
 
-				// Update the attachment to add the meta data
+			// Update the attachment to add the meta data
 			$attachment = array_merge( $attachment, $this->get_meta_data( $row, $column_names, CCA_Photo_Fields_Settings::class ) );
 
 
@@ -344,6 +349,7 @@ class CCA_G2_Migration {
 			$attach_data = wp_generate_attachment_metadata( $attach_id, $filename );
 			wp_update_attachment_metadata( $attach_id, $attach_data );
 		}
+
 		return $attach_id;
 	}
 
@@ -376,29 +382,27 @@ class CCA_G2_Migration {
 		}
 
 
-
 		// loop through each row of the database
 		// decide if it's a con, competition, or photo
 		// and add it to the appropriate array
 
-		$rows         = $this->db_object->get_cons();
+		$rows = $this->db_object->get_cons();
 		//for ( $x = 0; $x < 8464; $x = $x + 500 ) {
 		//	$rows = $db_object->get_rows( $x, 500 );
-			foreach ( $rows as $row ) {
-				$pathComponent = isset( $row->g_pathComponent ) ? trim( $row->g_pathComponent ) : '';
-				//$parentSequence = isset( $row->g_parentSequence ) ? trim( $row->g_parentSequence ) : '';
-				if ( $pathComponent == '' || $pathComponent == null ) {
-					continue;
-				}
-				// do the cons first
-
-				$new_post_id = $this->import_post_type( $row, COSTUME_CON_ARCHIVES_CON_CPT, $this->column_names['con'], CCA_Con_Fields_Settings::class );
-
-				// create album
-				$this->create_album( $row, $new_post_id );
+		foreach ( $rows as $row ) {
+			$pathComponent = isset( $row->g_pathComponent ) ? trim( $row->g_pathComponent ) : '';
+			//$parentSequence = isset( $row->g_parentSequence ) ? trim( $row->g_parentSequence ) : '';
+			if ( $pathComponent == '' || $pathComponent == null ) {
+				continue;
 			}
-		//}
+			// do the cons first
 
+			$new_post_id = $this->import_post_type( $row, COSTUME_CON_ARCHIVES_CON_CPT, $this->column_names['con'], CCA_Con_Fields_Settings::class );
+
+			// create album
+			$this->create_album( $row, $new_post_id );
+		}
+		//}
 
 
 		// now do competitions
@@ -406,86 +410,40 @@ class CCA_G2_Migration {
 		//	$rows = $db_object->get_rows( $x, 500 );
 		$rows = $this->db_object->get_competitions();
 
-			// if it's not a photo and not a con, it's a competition
-			foreach ( $rows as $row ) {
-				$pathComponent = isset( $row->g_pathComponent ) ? trim( $row->g_pathComponent ) : '';
-				//$parentSequence = isset( $row->g_parentSequence ) ? trim( $row->g_parentSequence ) : '';
-				if ( $pathComponent == '' || $pathComponent == null ) {
-					continue;
-				}
-
-				$new_post_id = $this->import_post_type( $row, COSTUME_CON_ARCHIVES_COMPETITION_CPT, $this->column_names['competition'], CCA_Competition_Fields_Settings::class );
+		// if it's not a photo and not a con, it's a competition
+		foreach ( $rows as $row ) {
+			$pathComponent = isset( $row->g_pathComponent ) ? trim( $row->g_pathComponent ) : '';
+			//$parentSequence = isset( $row->g_parentSequence ) ? trim( $row->g_parentSequence ) : '';
+			if ( $pathComponent == '' || $pathComponent == null ) {
+				continue;
 			}
 
-			// the first loop ensures all of the id_mapping values are in place
+			$new_post_id = $this->import_post_type( $row, COSTUME_CON_ARCHIVES_COMPETITION_CPT, $this->column_names['competition'], CCA_Competition_Fields_Settings::class );
+		}
+
+		// the first loop ensures all of the id_mapping values are in place
 		// now we can set up parents, etc.
-			foreach ( $rows as $row ) {
-				$pathComponent = isset( $row->g_pathComponent ) ? trim( $row->g_pathComponent ) : '';
-				//$parentSequence = isset( $row->g_parentSequence ) ? trim( $row->g_parentSequence ) : '';
-				if ( $pathComponent == '' || $pathComponent == null ) {
-					continue;
-				}
-
-				$new_post_id = $this->id_mapping[ $row->g_itemId ];
-				// set parent
-				$parent = $this->get_parent( $row->g_parentSequence );
-				update_post_meta( $new_post_id, 'competition_parent', $parent );
-
-				// create gallery
-				$parent_con = $this->get_con( $row->g_parentSequence );
-				$this->create_gallery( $row, $new_post_id, $parent_con );
+		foreach ( $rows as $row ) {
+			$pathComponent = isset( $row->g_pathComponent ) ? trim( $row->g_pathComponent ) : '';
+			//$parentSequence = isset( $row->g_parentSequence ) ? trim( $row->g_parentSequence ) : '';
+			if ( $pathComponent == '' || $pathComponent == null ) {
+				continue;
 			}
 
+			$new_post_id = $this->id_mapping[ $row->g_itemId ];
+			// set parent
+			$parent = $this->get_parent( $row->g_parentSequence );
+			update_post_meta( $new_post_id, 'competition_parent', $parent );
 
-	// save the id_mapping to the database so it's available for photo imports
-		update_option('cca_migration_id_mapping', $this->id_mapping );
-
-
-		/*	// if Path_Component ends with .jpg then it's a photo
-			if ( strtolower( substr( $pathComponent, - 4 ) ) == '.jpg' ) {
-				$photos[] = $row;
-
-			} else {
-				if ( preg_match( '/^cc\d\d?$/mi', $pathComponent ) ) {
-					// if Path_Component CC## or CC#  (case insensitive) then it's a con
-					$cons[] = $row;
-				} else {
-					// it's a competition
-					$competitions[] = $row;
-				}
-			}
+			// create gallery
+			$parent_con = $this->get_con( $row->g_parentSequence );
+			$this->create_gallery( $row, $new_post_id, $parent_con );
 		}
-	//}
 
-	// now process all the rows in the order of: cons -> competitions -> photos
-	// this ensures that all parents have been added to the id_mapping array
-	// before their children are processed
-	foreach ( $cons as $row ) {
-		$new_post_id = $this->import_post_type( $row, COSTUME_CON_ARCHIVES_CON_CPT, $column_names['con'], CCA_Con_Fields_Settings::class );
 
-		// create album
-		$this->create_album( $row, $new_post_id );
-	}
+		// save the id_mapping to the database so it's available for photo imports
+		update_option( 'cca_migration_id_mapping', $this->id_mapping );
 
-	foreach ( $competitions as $row ) {
-		$new_post_id = $this->import_post_type( $row, COSTUME_CON_ARCHIVES_COMPETITION_CPT, $column_names['competition'], CCA_Competition_Fields_Settings::class );
-
-		// set con
-		$parent_con = $this->get_parent( $new_post_id, $row->g_parentSequence, COSTUME_CON_ARCHIVES_CON_CPT );
-		update_post_meta( $new_post_id, 'competition_con', $parent_con );
-
-		// create gallery
-		$this->create_gallery( $row, $new_post_id, $parent_con );
-	}
-
-	$x = 0;
-	foreach ( $photos as $row ) {
-		$this->import_photo( $row, $column_names['photo'] );
-		$x ++;
-		if ( $x > 5 ) {
-			break;
-		}
-	}*/
 
 		echo 'Done!';
 
@@ -522,22 +480,26 @@ class CCA_G2_Migration {
 		$output = str_replace( '[/list]', '</ul>', $output );
 		$output = str_replace( '[*]', '<li>', $output );
 
-		if ( is_array($output ) ) {
+		if ( is_array( $output ) ) {
 			foreach ( $output as $key => $value ) {
-				$output[$key] = preg_replace( '/\[url\](.*)\[\/url\]/mU', '<a href="$1">$1</a>', $value );
-						$output[$key] = preg_replace( '/\[color=(.*)\]/', '<span style="color:$1">', $value);
-		$output[$key] = preg_replace( '/\[\/color\]/', '</span>', $value);
-
+				$output[ $key ] = $this->replace_html( $value );
 			}
 		} else {
-			$output = preg_replace( '/\[url\](.*)\[\/url\]/mU', '<a href="$1">$1</a>', $output );
-			$output = preg_replace( '/\[color=(.*)\]/', '<span style="color:$1">', $output);
-			$output = preg_replace( '/\[\/color\]/', '</span>', $output);
+			$output = $this->replace_html( $output );
 		}
 
 
-
 		return $output;
+	}
+
+	private function replace_html( $text ) {
+		$text = preg_replace( '/\[url\](.*)\[\/url\]/mU', '<a href="$1">$1</a>', $text );
+		$text = preg_replace( '/\[url=(.*)\](.*)\[\/url\]/mU', '<a href="$1">$2</a>', $text );
+		$text = preg_replace( '/\[color=(.*)\]/', '<span style="color:$1">', $text );
+		$text = preg_replace( '/\[\/color\]/', '</span>', $text );
+
+		return $text;
+
 	}
 
 	public function get_meta_data( $row, $column_names, $custom_fields_class ) {
@@ -549,9 +511,9 @@ class CCA_G2_Migration {
 			$tags = explode( ',', $tags_text );
 		}
 
-		$meta_data = array();
-		$tax_input = array();
-		$people_fields = array_map( 'sanitize_title', $this->people_fields);
+		$meta_data     = array();
+		$tax_input     = array();
+		$people_fields = array_map( 'sanitize_title', $this->people_fields );
 		foreach ( $column_names as $column_name ) {
 			$meta_key   = $custom_fields_class::get_field_id( $column_name );
 			$meta_value = isset( $row->$column_name ) ? trim( $row->$column_name ) : '';
@@ -562,27 +524,39 @@ class CCA_G2_Migration {
 
 				}
 
+				$meta_data[ $meta_key ] = $meta_value;
+
 				if ( in_array( str_replace( '_', '-', $column_name ), $people_fields ) ) {
 
-					$meta_value= wp_specialchars_decode($meta_value, ENT_QUOTES );
+					$meta_data[ $meta_key ] = array();
+
+					$meta_value = wp_specialchars_decode( $meta_value, ENT_QUOTES );
 					$meta_value = $this->translate_markup_to_html( $meta_value );
 
 					$meta_value = explode( '&', $meta_value );
-					$meta_value = array_map( 'trim', $meta_value );
+					$values     = array();
+					foreach ( $meta_value as $value ) {
+						$values = array_merge( $values, explode( ',', $value ) );
+					}
+					$meta_value = array_map( 'trim', $values );
 
 					// add to terms
 					foreach ( $meta_value as $term ) {
-						if ( ! term_exists( $term, 'cca_person' ) ) {
-							wp_insert_term( $term, 'cca_person' );
+						$term_data = term_exists( $term, 'cca_person' );
+						// insert if it doesn't already exists
+						if ( $term_data === null ) {
+							$term_data = wp_insert_term( $term, 'cca_person' );
 						}
 						$tax_input['cca_person'][] = $term;
+
+						// also add to post meta
+						if ( array_key_exists( 'term_id', $term_data ) ) {
+							$meta_data[ $meta_key ][] = $term_data['term_id'];
+						}
 					}
 				}
 
 
-
-
-				$meta_data[ $meta_key ] = $meta_value;
 			}
 		}
 		$summary   = $this->translate_markup_to_html( $summary );
@@ -594,15 +568,16 @@ class CCA_G2_Migration {
 			'post_excerpt' => $summary,
 			'meta_input'   => $meta_data,
 			'tags_input'   => $tags,
-			'tax_input'     =>  $tax_input
+			'tax_input'    => $tax_input
 		);
 
 	}
 
 	private function get_con( $parentSequence ) {
-		$parents = explode( '/', trim( $parentSequence ));
-		$parent_id = intval( $parents[1]);
-		return isset($this->id_mapping[$parent_id]) ? $this->id_mapping[$parent_id] : 0 ;
+		$parents   = explode( '/', trim( $parentSequence ) );
+		$parent_id = intval( $parents[1] );
+
+		return isset( $this->id_mapping[ $parent_id ] ) ? $this->id_mapping[ $parent_id ] : 0;
 	}
 
 	public function get_parent( $parentSequence ) {
@@ -641,11 +616,14 @@ class CCA_G2_Migration {
 		update_post_meta( $new_post_id, 'con_album', $album_id );
 	}
 
+
 	private function create_gallery( $row, $new_post_id, $parent_con ) {
 		// create gallery
 		$new_gallery_id = foogallery_create_gallery( null, '' );
 		wp_update_post( array( 'ID' => $new_gallery_id, 'post_title' => $row->g_title ) );
 		$this->galleries[ $new_post_id ] = $new_gallery_id;
+		$settings                        = array( 'default_thumbnail_link' => 'page' );
+		update_post_meta( $new_gallery_id, FOOGALLERY_META_SETTINGS, $settings );
 
 		// set the gallery to the competition
 		update_post_meta( $new_post_id, 'competition_album', $new_gallery_id );
