@@ -274,6 +274,8 @@ class Costume_Con_Archives {
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );
 		$this->loader->add_action( 'cca_custom_tax_term_meta', $plugin_public, 'content' );
 		$this->loader->add_shortcode( 'cca_album', $plugin_public, 'album_shortcode' );
+		$this->loader->add_filter( 'foogallery_album_build_gallery_link', $plugin_public, 'get_gallery_link');
+		$this->loader->add_filter( 'foogallery_build_attachment_html_caption', $plugin_public, 'foogallery_build_attachment_html_caption', 10, 3);
 
 
 	}
@@ -352,3 +354,26 @@ class Costume_Con_Archives {
 
 }
 
+
+
+//add_action('init','cca_update_galleries');
+function cca_update_galleries() {
+	$galleries = foogallery_get_all_galleries();
+	foreach ( $galleries as $gallery ) {
+		update_post_meta( $gallery->ID, FOOGALLERY_META_TEMPLATE, 'simple_portfolio' );
+		$settings = get_post_meta( $gallery->ID, FOOGALLERY_META_SETTINGS, true );
+		if ( is_array( $settings)) {
+			$settings['simple_portfolio_thumbnail_link'] = 'image' ;
+			$settings['simple_portfolio_lightbox'] = 'foobox' ;
+			$settings['simple_portfolio_thumbnail_dimensions'] = array(
+				'height' => 200,
+				'width'  => 250,
+				'crop'   => 1
+			);
+			update_post_meta( $gallery->ID, FOOGALLERY_META_SETTINGS, $settings );
+		}
+
+
+
+	}
+}

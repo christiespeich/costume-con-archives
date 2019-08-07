@@ -111,5 +111,14 @@ class CCA_CPT_With_Custom_fields {
 		return $content;
 	}
 
+	public function display_custom_fields( $custom_fields, $post_id ) {
+		$post_meta = get_post_meta( $post_id );
+		foreach ( $custom_fields as $custom_field ) {
+			if ( isset( $post_meta[ $custom_field->id ] ) ) {
+				$custom_field->render( $post_id, $post_meta[ $custom_field->id ][0] );
+			}
+		}
+	}
+
 
 }

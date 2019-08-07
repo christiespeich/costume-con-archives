@@ -55,4 +55,32 @@ class CCA_Competition_CPT extends CCA_CPT_With_Custom_fields {
 		}
 		return null;
 	}
+
+		public function display_competition_metadata( $post_id ) {
+		$parent = $this->get_parent( $post_id );
+		if ( $parent != null ) {
+			$post_type = get_post_type_object( $parent->post_type );
+			$type      = $post_type->labels->singular_name;
+			$link      = get_permalink( $parent->ID );
+			echo "<div class='cca_custom_field_label cca_cca_con_fields_parent_label'>Parent {$type}</div>";
+			echo "<a href='{$link}'>{$parent->post_title}</a>";
+		}
+
+
+		$custom_fields = CCA_Competition_Fields_Settings::get_fields();
+		$this->display_custom_fields( $custom_fields, $post_id );
+
+
+		$children = $this->get_children( $post_id );
+		if ( count( $children ) > 0 ) {
+			echo '<p><div class="cca_custom_field_label cca_cca_con_fields_children_label">Child Competitions</div></p><ul>';
+
+			foreach ( $children as $competition ) {
+				$link = get_permalink( $competition->ID );
+				echo "<li><a href='{$link}'>{$competition->post_title}</a></li>";
+			}
+			echo '</ul>';
+		}
+	}
+
 }

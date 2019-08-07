@@ -622,8 +622,17 @@ class CCA_G2_Migration {
 		$new_gallery_id = foogallery_create_gallery( null, '' );
 		wp_update_post( array( 'ID' => $new_gallery_id, 'post_title' => $row->g_title ) );
 		$this->galleries[ $new_post_id ] = $new_gallery_id;
-		$settings                        = array( 'default_thumbnail_link' => 'page' );
-		update_post_meta( $new_gallery_id, FOOGALLERY_META_SETTINGS, $settings );
+		$settings = array();
+		$settings['simple_portfolio_thumbnail_link'] = 'image' ;
+			$settings['simple_portfolio_lightbox'] = 'foobox' ;
+			$settings['simple_portfolio_thumbnail_dimensions'] = array(
+				'height' => 200,
+				'width'  => 250,
+				'crop'   => 1
+			);
+			update_post_meta( $new_gallery_id, FOOGALLERY_META_SETTINGS, $settings );
+
+		update_post_meta( $new_gallery_id, FOOGALLERY_META_TEMPLATE, 'simple_portfolio' );
 
 		// set the gallery to the competition
 		update_post_meta( $new_post_id, 'competition_album', $new_gallery_id );

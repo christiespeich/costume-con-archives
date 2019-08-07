@@ -1,7 +1,7 @@
 
 
 <?php
-$parent = $this->get_parent( $post->ID );
+/*$parent = $this->get_parent( $post->ID );
 if ( $parent != null ) {
 	$post_type = get_post_type_object( $parent->post_type );
 	$type = $post_type->labels->singular_name;
@@ -31,7 +31,10 @@ if ( count($children ) > 0 ) {
 		echo "<li><a href='{$link}'>{$competition->post_title}</a></li>";
 	}
 	echo '</ul>';
-}
+}*/
+
+global $post;
+$this->display_competition_metadata( $post->ID );
 
 $album_id = isset($post_meta['competition_album']) ? intval($post_meta['competition_album'][0]) : 0;
 if ( $album_id != 0 ) {
